@@ -4,7 +4,7 @@ import Image from "next/image";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Monkstagram Studio — Contentstack Design, Argued",
+  title: "Design Monks — Design Ascendancy",
   description:
     "How Contentstack's design team makes decisions, governs its system, and uses AI to do both — in the open.",
 };

@@ -1,42 +1,69 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ledger } from "@/content/ledger";
 import { uiKitComponents } from "@/content/ui-kit";
 import { changelog } from "@/content/changelog";
+import TeamSection from "./TeamSection";
 
 export default function Home() {
   return (
     <div>
-      {/* Hero — the thesis */}
-      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16">
-        <p className="ledger-line text-sm text-amethyst tracking-widest uppercase mb-6">
-          Design, argued.
-        </p>
-        <h1 className="text-4xl md:text-6xl font-semibold tracking-tight max-w-3xl leading-[1.1]">
-          Every decision our design team makes is written down, reasoned through,
-          and open to the outside world.
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg text-subtle leading-relaxed">
-          Monkstagram Studio is Contentstack design&rsquo;s public ledger: what we
-          built, why we built it that way, and where AI did the heavy lifting.
-          It&rsquo;s also home to the Venus UI Kit, its changelog, and — for our
-          own designers only — a governance portal and an AI consultant trained
-          on our system.
-        </p>
-        <div className="mt-10 flex flex-wrap gap-4">
-          <Link
-            href="/ui-kit"
-            className="rounded-full bg-amethyst text-shadow-heavy font-medium px-6 py-3 hover:opacity-90 transition-opacity"
-          >
-            Browse the UI Kit
-          </Link>
-          <Link
-            href="/changelog"
-            className="rounded-full border border-shadow-border px-6 py-3 hover:border-amethyst transition-colors"
-          >
-            Read the changelog
-          </Link>
+      {/* Hero — the thesis, built around the Design Monks label */}
+      <section className="relative overflow-hidden">
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 50% at 50% 20%, rgba(196,67,46,0.14), transparent 70%), radial-gradient(ellipse 50% 40% at 80% 10%, rgba(200,162,74,0.10), transparent 70%)",
+          }}
+        />
+        <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-8 grid md:grid-cols-[1fr_320px] gap-12 items-center">
+          <div>
+            <p className="label-eyebrow text-xs text-periwinkle uppercase mb-4">
+              7 Years Old &middot; Blended &middot; Contentstack
+            </p>
+            <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight leading-[1.02]">
+              Design
+              <br />
+              <span className="text-amethyst">Ascendancy</span>
+            </h1>
+            <p className="mt-6 max-w-lg text-lg text-subtle leading-relaxed">
+              Monkstagram Studio is Contentstack design&rsquo;s public ledger:
+              what we built, why we built it that way, and where AI did the
+              heavy lifting. It&rsquo;s also home to the Venus UI Kit, its
+              changelog, and — for our own designers only — a governance
+              portal and an AI consultant trained on our system.
+            </p>
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Link
+                href="/ui-kit"
+                className="rounded-full bg-amethyst text-shadow-heavy font-medium px-6 py-3 hover:opacity-90 transition-opacity"
+              >
+                Browse the UI Kit
+              </Link>
+              <Link
+                href="/changelog"
+                className="rounded-full border border-shadow-border px-6 py-3 hover:border-amethyst transition-colors"
+              >
+                Read the changelog
+              </Link>
+            </div>
+          </div>
+          <div className="justify-self-center">
+            <Image
+              src="/design-monks-bottle.png"
+              alt="Design Monks — 7 Years Old Blended"
+              width={320}
+              height={480}
+              priority
+              className="drop-shadow-[0_20px_60px_rgba(196,67,46,0.25)]"
+            />
+          </div>
         </div>
       </section>
+
+      <TeamSection />
 
       {/* The Ledger — signature element */}
       <section className="border-t border-shadow-border">
