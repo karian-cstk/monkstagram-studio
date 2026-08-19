@@ -14,16 +14,25 @@ import {
 } from "@/content/dashboard";
 import { leaderboardPeople } from "@/content/leaderboard";
 
-// Light-theme dataviz tokens (validated categorical palette + reference
-// chart chrome from the dataviz skill — see references/palette.md).
-const INK = "#0b0b0b";
-const INK_SECONDARY = "#52514e";
-const MUTED = "#898781";
-const SURFACE = "#ffffff";
-const PAGE_BG = "#f9f9f7";
-const GRID = "#e1e0d9";
-const BORDER = "rgba(11,11,11,0.10)";
-const ACCENT = "#AC75FF";
+// Chrome (text/surface/border/accent) uses the same tokens as the rest of
+// the site (app/globals.css) so this page matches the global light/dark
+// toggle and stays visually consistent with every other page. The chart
+// MARK colors below (CAT, SEQ_BLUE) are intentionally separate — they're
+// the dataviz skill's validated categorical/sequential palette, chosen for
+// data-encoding distinguishability (CVD-safe multi-series contrast), not
+// brand matching. Mixing the two would break the charts' ability to tell
+// categories apart.
+const INK = "var(--crystal-clear)";
+const INK_SECONDARY = "var(--slate)";
+const MUTED = "var(--muted)";
+const SURFACE = "var(--shadow-card)";
+const PAGE_BG = "var(--shadow-heavy)";
+const GRID = "var(--shadow-border)";
+const BORDER = "var(--shadow-border)";
+const ACCENT = "var(--amethyst-accessible)";
+const ACCENT_FILL = "var(--amethyst)";
+const ON_ACCENT = "var(--on-accent)";
+const ACCENT_SOFT = "var(--shadow-border)";
 const CAT = { blue: "#2a78d6", orange: "#eb6834", aqua: "#1baf7a", yellow: "#eda100" };
 const SEQ_BLUE = ["#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281"];
 
@@ -106,7 +115,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-              What&rsquo;s moving, what&rsquo;s stuck. 📊
+              What&rsquo;s moving, what&rsquo;s stuck.
             </h1>
             <p className="mt-3 max-w-2xl text-sm" style={{ color: INK_SECONDARY }}>
               Live-pulled from Jira boards PD, UT, UE, PXD. Click any chart for the full list.
@@ -119,7 +128,7 @@ export default function DashboardPage() {
             className="rounded-lg px-4 py-2 text-sm font-medium border transition-all hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ borderColor: BORDER, background: SURFACE, color: INK, outlineColor: ACCENT }}
           >
-            {refreshState === "loading" ? "Refreshing…" : refreshState === "done" ? "Current ✓" : "Refresh"}
+            {refreshState === "loading" ? "Refreshing…" : refreshState === "done" ? "Up to date" : "Refresh"}
           </button>
         </div>
 
@@ -132,7 +141,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <p className="text-xs uppercase tracking-wide font-medium" style={{ color: ACCENT }}>
-                🏆 Top performers · last 30 days
+                Top performers · last 30 days
               </p>
               <p className="text-xs mt-0.5" style={{ color: MUTED }}>
                 Score = done×10 + in-progress×2. Click to open the full leaderboard →
@@ -150,7 +159,7 @@ export default function DashboardPage() {
             ) : (
               <div
                 className="rounded-full flex items-center justify-center font-semibold"
-                style={{ width: 56, height: 56, background: "#f0e9ff", color: ACCENT }}
+                style={{ width: 56, height: 56, background: ACCENT_SOFT, color: ACCENT }}
               >
                 {ranked[0] && initials(ranked[0].name)}
               </div>
@@ -167,12 +176,15 @@ export default function DashboardPage() {
                     className="h-full rounded-full flex items-center justify-end px-2"
                     style={{
                       width: mounted ? `${(p.score / maxScore) * 100}%` : "0%",
-                      background: i === 0 ? ACCENT : "#c7bfd9",
+                      background: i === 0 ? ACCENT_FILL : BORDER,
                       transition: `width 900ms ${EASE}`,
                       transitionDelay: `${i * 80}ms`,
                     }}
                   >
-                    <span className="text-[11px] font-semibold text-white whitespace-nowrap">
+                    <span
+                      className="text-[11px] font-semibold whitespace-nowrap"
+                      style={{ color: i === 0 ? ON_ACCENT : INK }}
+                    >
                       {p.score}
                     </span>
                   </div>
@@ -191,7 +203,7 @@ export default function DashboardPage() {
             style={{ borderColor: BORDER, background: SURFACE }}
           >
             <p className="text-xs uppercase tracking-wide font-medium" style={{ color: ACCENT }}>
-              📥 Unassigned tickets
+              Unassigned tickets
             </p>
             <p className="text-4xl font-semibold mt-2" style={{ color: INK }}>
               {unassignedTotal.toLocaleString()}
@@ -239,7 +251,7 @@ export default function DashboardPage() {
             style={{ borderColor: BORDER, background: SURFACE }}
           >
             <p className="text-xs uppercase tracking-wide font-medium" style={{ color: ACCENT }}>
-              ⏳ Pending &gt; 20 days
+              Pending &gt; 20 days
             </p>
             <p className="text-4xl font-semibold mt-2" style={{ color: INK }}>
               {staleTotal.toLocaleString()}
@@ -283,7 +295,7 @@ export default function DashboardPage() {
           style={{ borderColor: BORDER, background: SURFACE }}
         >
           <p className="text-xs uppercase tracking-wide font-medium" style={{ color: ACCENT }}>
-            ♻️ Reopened after Done
+            Reopened after Done
           </p>
           <p className="text-4xl font-semibold mt-2" style={{ color: INK }}>
             {reopenedTickets.totalCount}
@@ -300,17 +312,18 @@ export default function DashboardPage() {
                 </span>
                 <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ background: GRID }}>
                   <div
-                    className="h-full rounded-full flex items-center justify-end px-2"
+                    className="h-full rounded-full"
                     style={{
                       width: mounted ? `${(c.count / maxClass) * 100}%` : "0%",
                       background: c.color,
                       transition: `width 900ms ${EASE}`,
                       transitionDelay: `${i * 80}ms`,
                     }}
-                  >
-                    <span className="text-[10px] font-semibold text-white">{c.count}</span>
-                  </div>
+                  />
                 </div>
+                <span className="text-xs font-semibold w-6 text-right shrink-0" style={{ color: INK }}>
+                  {c.count}
+                </span>
               </div>
             ))}
           </div>

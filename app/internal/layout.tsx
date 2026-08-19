@@ -7,7 +7,7 @@ export default function InternalLayout({ children }: { children: React.ReactNode
     <AuthProvider>
       <div className="bg-shadow-heavy">
         <div className="max-w-6xl mx-auto px-6 pt-6">
-          <span className="text-xs rounded-full border border-amethyst/40 text-amethyst px-3 py-1">
+          <span className="text-xs rounded-full border border-amethyst/40 text-amethyst-accessible px-3 py-1">
             Internal — Contentstack designers only
           </span>
         </div>

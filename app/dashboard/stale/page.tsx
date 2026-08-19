@@ -4,13 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { staleAgeBuckets, staleTickets20d, type StaleItem } from "@/content/dashboard";
 
-const INK = "#0b0b0b";
-const INK_SECONDARY = "#52514e";
-const MUTED = "#898781";
-const SURFACE = "#ffffff";
-const PAGE_BG = "#f9f9f7";
-const BORDER = "rgba(11,11,11,0.10)";
-const ACCENT = "#AC75FF";
+// Chrome matches the site tokens (app/globals.css); SEQ_BLUE is the
+// dataviz skill's validated sequential ramp for the age buckets — kept
+// separate from brand color on purpose (see dashboard/page.tsx).
+const INK = "var(--crystal-clear)";
+const INK_SECONDARY = "var(--slate)";
+const MUTED = "var(--muted)";
+const SURFACE = "var(--shadow-card)";
+const PAGE_BG = "var(--shadow-heavy)";
+const BORDER = "var(--shadow-border)";
+const ACCENT = "var(--amethyst-accessible)";
+const ACCENT_SOFT = "var(--shadow-border)";
 const SEQ_BLUE = ["#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281"];
 
 function daysAgo(iso: string) {
@@ -48,9 +52,14 @@ export default function StaleDrilldownPage() {
           {staleAgeBuckets.map((b, i) => (
             <span
               key={b.label}
-              className="text-xs rounded-full px-3 py-1 font-medium text-white"
-              style={{ background: SEQ_BLUE[i] }}
+              className="flex items-center gap-1.5 text-xs rounded-full px-3 py-1 font-medium"
+              style={{ background: ACCENT_SOFT, color: INK }}
             >
+              <span
+                className="w-2 h-2 rounded-full inline-block shrink-0"
+                style={{ background: SEQ_BLUE[i] }}
+                aria-hidden="true"
+              />
               {b.label} · {b.count.toLocaleString()}
             </span>
           ))}
@@ -68,7 +77,7 @@ export default function StaleDrilldownPage() {
               >
                 <span
                   className="shrink-0 font-mono text-xs rounded px-1.5 py-0.5"
-                  style={{ background: "#f0e9ff", color: ACCENT }}
+                  style={{ background: ACCENT_SOFT, color: ACCENT }}
                 >
                   {item.key}
                 </span>
@@ -80,7 +89,7 @@ export default function StaleDrilldownPage() {
                 </span>
                 <span
                   className="shrink-0 text-xs rounded-full px-2 py-0.5"
-                  style={{ background: "#f2f1ee", color: INK_SECONDARY }}
+                  style={{ background: BORDER, color: INK }}
                 >
                   {item.status}
                 </span>

@@ -4,15 +4,65 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Oswald:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
 
+/* Theme tokens — light is the default; the toggle (see ThemeToggle.tsx)
+   sets data-theme="dark" on <html> to restore the original whiskey-label
+   dark look unchanged. No prefers-color-scheme branch on purpose: the
+   default is light regardless of OS setting, only the explicit toggle
+   (persisted to localStorage) switches it. */
+/* Every text-color token below is contrast-checked (WCAG 2.1) against the
+   surface it's meant to sit on — see the computation in the PR/commit
+   notes. --amethyst stays the fixed brand hue for backgrounds, borders,
+   and large elements; --amethyst-accessible is a contrast-safe variant of
+   the same hue for use as small body text, which the flat --amethyst hex
+   fails at in dark mode (3.79:1). --on-accent is fixed (not themed): text
+   that sits on top of an --amethyst-filled button/background needs to stay
+   dark in both themes, since the button color itself doesn't change. */
 :root {
+  color-scheme: light;
+  --shadow-heavy: #faf6ef;
+  --shadow-card: #ffffff;
+  --shadow-border: #e5d9c3;
+  --crystal-clear: #241a10;
+  --amethyst: #c4432e;
+  --amethyst-accessible: #a83a26;
+  --on-accent: #ffffff;
+  --periwinkle: #8a6a20;
+  --mint: #7a6b1a;
+  --plum: #6b3a1e;
+  --slate: #6b5636;
+  --muted: #7a6a50;
+  --caption: #6b5a42;
+  --subtle: #5c4a32;
+  --status-up: #146c34;
+  --status-down: #b3261e;
+}
+
+:root[data-theme="dark"] {
   color-scheme: dark;
+  --shadow-heavy: #150f0a;
+  --shadow-card: #241a10;
+  --shadow-border: #3d2c1a;
+  --crystal-clear: #f1e4cc;
+  --amethyst: #c4432e;
+  --amethyst-accessible: #e5765f;
+  --on-accent: #ffffff;
+  --periwinkle: #c8a24a;
+  --mint: #c8a24a;
+  --plum: #6b3a1e;
+  --slate: #8a6a45;
+  --muted: #9c8a6e;
+  --caption: #a89478;
+  --subtle: #c7b79a;
+  --status-up: #6fcf7d;
+  --status-down: #ff8a80;
 }
 
 html,
 body {
-  background-color: #150f0a;
-  color: #f1e4cc;
+  background-color: var(--shadow-heavy);
+  color: var(--crystal-clear);
   font-family: "Inter", system-ui, sans-serif;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 .label-eyebrow {
@@ -21,7 +71,7 @@ body {
 }
 
 .wax-seal {
-  border: 2px solid #c8a24a;
+  border: 2px solid var(--periwinkle);
   border-radius: 9999px;
 }
 
@@ -38,14 +88,23 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid #c4432e;
+  outline: 2px solid var(--amethyst);
   outline-offset: 2px;
 }
 
-/* Hero galaxy backdrop — warm nebula + starfield, blended as one gradient (no separate circular shapes) */
+/* Hero backdrop — a literal night sky (nebula + starfield) only makes sense
+   in dark mode. Light mode gets a soft daytime gradient instead of an
+   inverted, broken-looking version of the same art. */
 .hero-base {
   position: absolute;
   inset: 0;
+  background: radial-gradient(ellipse 70% 55% at 50% 28%, rgba(196, 67, 46, 0.08), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 15% 85%, rgba(200, 162, 74, 0.1), transparent 65%),
+    radial-gradient(ellipse 50% 40% at 90% 10%, rgba(196, 67, 46, 0.06), transparent 65%),
+    #faf6ef;
+}
+
+:root[data-theme="dark"] .hero-base {
   background: radial-gradient(
       ellipse 70% 55% at 50% 28%,
       rgba(107, 58, 30, 0.45),
@@ -63,6 +122,12 @@ body {
   position: absolute;
   inset: -10%;
   pointer-events: none;
+  opacity: 0;
+}
+
+:root[data-theme="dark"] .hero-stars-far,
+:root[data-theme="dark"] .hero-stars-near {
+  opacity: 1;
 }
 
 .hero-stars-far {
@@ -138,6 +203,10 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  background: radial-gradient(ellipse 70% 65% at 50% 45%, transparent 55%, rgba(196, 67, 46, 0.06) 100%);
+}
+
+:root[data-theme="dark"] .hero-vignette {
   background: radial-gradient(ellipse 70% 65% at 50% 45%, transparent 45%, rgba(21, 15, 10, 0.85) 100%);
 }
 

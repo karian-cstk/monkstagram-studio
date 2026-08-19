@@ -4,13 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { unassignedByProject, unassignedOpen, type UnassignedItem } from "@/content/dashboard";
 
-const INK = "#0b0b0b";
-const INK_SECONDARY = "#52514e";
-const MUTED = "#898781";
-const SURFACE = "#ffffff";
-const PAGE_BG = "#f9f9f7";
-const BORDER = "rgba(11,11,11,0.10)";
-const ACCENT = "#AC75FF";
+// Chrome matches the site tokens (app/globals.css); CAT is the dataviz
+// skill's validated categorical palette for the per-board legend chips —
+// kept separate from brand color on purpose (see dashboard/page.tsx).
+const INK = "var(--crystal-clear)";
+const INK_SECONDARY = "var(--slate)";
+const MUTED = "var(--muted)";
+const SURFACE = "var(--shadow-card)";
+const PAGE_BG = "var(--shadow-heavy)";
+const BORDER = "var(--shadow-border)";
+const ACCENT = "var(--amethyst-accessible)";
+const ACCENT_SOFT = "var(--shadow-border)";
 const CAT = { blue: "#2a78d6", orange: "#eb6834", aqua: "#1baf7a", yellow: "#eda100" };
 
 function daysAgo(iso: string) {
@@ -69,7 +73,7 @@ export default function UnassignedDrilldownPage() {
               >
                 <span
                   className="shrink-0 font-mono text-xs rounded px-1.5 py-0.5"
-                  style={{ background: "#f0e9ff", color: ACCENT }}
+                  style={{ background: ACCENT_SOFT, color: ACCENT }}
                 >
                   {item.key}
                 </span>
@@ -78,7 +82,7 @@ export default function UnassignedDrilldownPage() {
                 </span>
                 <span
                   className="shrink-0 text-xs rounded-full px-2 py-0.5"
-                  style={{ background: "#f2f1ee", color: INK_SECONDARY }}
+                  style={{ background: BORDER, color: INK }}
                 >
                   {item.status}
                 </span>

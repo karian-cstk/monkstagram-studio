@@ -49,7 +49,7 @@ export default function Home() {
           <h1 className="font-display font-extrabold tracking-tight leading-[1.15] text-[clamp(30px,6.2vh,68px)]">
             Design
             <br />
-            <span className="text-amethyst">Ascendancy</span>
+            <span className="text-amethyst-accessible">Ascendancy</span>
           </h1>
           <p className="max-w-lg text-subtle leading-relaxed text-[clamp(13px,1.8vh,18px)]">
             Monkstagram Studio is Contentstack design&rsquo;s public ledger:
@@ -61,7 +61,7 @@ export default function Home() {
           <div className="flex flex-wrap justify-center gap-4 mt-2">
             <Link
               href="/ui-kit"
-              className="rounded-full bg-amethyst text-shadow-heavy font-medium px-6 py-3 hover:opacity-90 transition-opacity"
+              className="rounded-full bg-amethyst text-on-accent font-medium px-6 py-3 hover:opacity-90 transition-opacity"
             >
               Browse the UI Kit
             </Link>
@@ -87,7 +87,7 @@ export default function Home() {
           <ol className="space-y-8">
             {ledger.map((entry) => (
               <li key={entry.date} className="grid md:grid-cols-[120px_1fr] gap-4 md:gap-8">
-                <div className="ledger-line text-sm text-amethyst">{entry.date}</div>
+                <div className="ledger-line text-sm text-amethyst-accessible">{entry.date}</div>
                 <div className="border-l border-shadow-border pl-6">
                   <h3 className="font-semibold text-lg">{entry.decision}</h3>
                   <p className="mt-2 text-subtle leading-relaxed">{entry.rationale}</p>
@@ -107,7 +107,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="flex items-baseline justify-between mb-10">
             <h2 className="text-2xl font-semibold">Venus UI Kit</h2>
-            <Link href="/ui-kit" className="text-sm text-amethyst hover:underline">
+            <Link href="/ui-kit" className="text-sm text-amethyst-accessible hover:underline">
               View all components →
             </Link>
           </div>
@@ -130,7 +130,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="flex items-baseline justify-between mb-10">
             <h2 className="text-2xl font-semibold">Latest changes</h2>
-            <Link href="/ui-kit#changelog" className="text-sm text-amethyst hover:underline">
+            <Link href="/ui-kit#changelog" className="text-sm text-amethyst-accessible hover:underline">
               Full changelog →
             </Link>
           </div>
@@ -151,7 +151,7 @@ export default function Home() {
 function StatusPill({ status }: { status: "Stable" | "Beta" | "Deprecated" }) {
   const styles: Record<string, string> = {
     Stable: "bg-mint/10 text-mint border-mint/30",
-    Beta: "bg-amethyst/10 text-amethyst border-amethyst/30",
+    Beta: "bg-amethyst/10 text-amethyst-accessible border-amethyst/30",
     Deprecated: "bg-caption/10 text-muted border-shadow-border",
   };
   return (

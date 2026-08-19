@@ -12,7 +12,7 @@ export default function SignInPage() {
       </p>
       <button
         onClick={() => signIn("google", { callbackUrl: "/internal" })}
-        className="rounded-full bg-amethyst text-shadow-heavy font-medium px-6 py-3 hover:opacity-90 transition-opacity"
+        className="rounded-full bg-amethyst text-on-accent font-medium px-6 py-3 hover:opacity-90 transition-opacity"
       >
         Continue with Google
       </button>

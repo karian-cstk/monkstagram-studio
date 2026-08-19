@@ -1,23 +1,26 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}", "./content/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        "shadow-heavy": "#150F0A",
-        "shadow-card": "#241A10",
-        "shadow-border": "#3D2C1A",
-        "crystal-clear": "#F1E4CC",
-        amethyst: "#C4432E",
-        "amethyst-accessible": "#C4432E",
-        periwinkle: "#C8A24A",
-        mint: "#C8A24A",
-        plum: "#6B3A1E",
-        slate: "#8A6A45",
-        muted: "#9C8A6E",
-        caption: "#6B5A42",
-        subtle: "#C7B79A",
+        "shadow-heavy": "var(--shadow-heavy)",
+        "shadow-card": "var(--shadow-card)",
+        "shadow-border": "var(--shadow-border)",
+        "crystal-clear": "var(--crystal-clear)",
+        amethyst: "var(--amethyst)",
+        "amethyst-accessible": "var(--amethyst-accessible)",
+        "on-accent": "var(--on-accent)",
+        periwinkle: "var(--periwinkle)",
+        mint: "var(--mint)",
+        plum: "var(--plum)",
+        slate: "var(--slate)",
+        muted: "var(--muted)",
+        caption: "var(--caption)",
+        subtle: "var(--subtle)",
+        "status-up": "var(--status-up)",
+        "status-down": "var(--status-down)",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

@@ -40,7 +40,7 @@ export default function TeamSection() {
               </div>
               <h3 className="font-semibold">{member.name}</h3>
               <p className="text-xs text-muted mt-0.5">{member.role}</p>
-              <p className="label-eyebrow text-[10px] text-amethyst uppercase mt-3">
+              <p className="label-eyebrow text-[10px] text-amethyst-accessible uppercase mt-3">
                 {member.product}
               </p>
               <p className="text-sm text-subtle mt-2 leading-relaxed">

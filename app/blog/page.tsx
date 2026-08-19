@@ -5,7 +5,7 @@ export const metadata = { title: "Blogs — Monkstagram Studio" };
 export default function BlogPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-16">
-      <p className="ledger-line text-sm text-amethyst tracking-widest uppercase mb-4">
+      <p className="ledger-line text-sm text-amethyst-accessible tracking-widest uppercase mb-4">
         Blogs
       </p>
       <h1 className="text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">

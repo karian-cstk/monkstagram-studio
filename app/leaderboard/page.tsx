@@ -13,6 +13,25 @@ import {
 
 type TimeWindow = "allTime" | "last90d";
 
+// Same tokens as the rest of the site (app/globals.css) — plain CSS custom
+// properties, so this page always matches the global light/dark toggle
+// (set via data-theme on <html>) automatically, with no JS branching
+// needed here at all.
+const COLORS = {
+  bg: "var(--shadow-heavy)",
+  card: "var(--shadow-card)",
+  border: "var(--shadow-border)",
+  text: "var(--crystal-clear)",
+  textSub: "var(--slate)",
+  textFaint: "var(--muted)",
+  accent: "var(--amethyst-accessible)",
+  accentFill: "var(--amethyst)",
+  onAccent: "var(--on-accent)",
+  accentSoft: "var(--shadow-border)",
+  up: "var(--status-up)",
+  down: "var(--status-down)",
+};
+
 function initials(name: string) {
   return name
     .split(" ")
@@ -70,6 +89,7 @@ function rationale(
 const MEDAL = ["🥇", "🥈", "🥉"];
 
 export default function LeaderboardPage() {
+  const C = COLORS;
   const [timeWindow, setTimeWindow] = useState<TimeWindow>("allTime");
   const [people, setPeople] = useState(initialPeople);
   const [asOf, setAsOf] = useState(initialAsOf);
@@ -128,7 +148,7 @@ export default function LeaderboardPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: "#1A1919", color: "#F1E4CC" }}
+      style={{ background: C.bg, color: C.text, transition: "background 200ms ease, color 200ms ease" }}
     >
       <div
         className="max-w-5xl mx-auto px-6 py-16"
@@ -136,7 +156,7 @@ export default function LeaderboardPage() {
       >
         <p
           className="text-sm tracking-widest uppercase mb-4"
-          style={{ color: "#AC75FF" }}
+          style={{ color: C.accent }}
         >
           Design Team Leaderboard
         </p>
@@ -145,7 +165,7 @@ export default function LeaderboardPage() {
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
               Who&rsquo;s shipping, ranked by Jira.
             </h1>
-            <p className="mt-3 max-w-2xl text-sm" style={{ color: "#9C8A6E" }}>
+            <p className="mt-3 max-w-2xl text-sm" style={{ color: C.textSub }}>
               Live-pulled from Jira boards{" "}
               {scopedBoards.map((b) => b.key).join(", ")} (
               {scopedBoards.map((b) => b.name).join(" · ")}), for the 12
@@ -159,16 +179,16 @@ export default function LeaderboardPage() {
             disabled={refreshState === "loading"}
             className="rounded-lg px-4 py-2 text-sm font-medium border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{
-              borderColor: "#3D2C1A",
-              background: "#292928",
-              color: "#F1E4CC",
-              outlineColor: "#AC75FF",
+              borderColor: C.border,
+              background: C.card,
+              color: C.text,
+              outlineColor: C.accent,
             }}
           >
             {refreshState === "loading"
               ? "Refreshing…"
               : refreshState === "done"
-                ? "Snapshot is current ✓"
+                ? "Snapshot is current"
                 : "Refresh"}
           </button>
         </div>
@@ -178,7 +198,7 @@ export default function LeaderboardPage() {
           role="tablist"
           aria-label="Time window"
           className="mt-8 inline-flex rounded-lg border p-1 gap-1"
-          style={{ borderColor: "#3D2C1A", background: "#292928" }}
+          style={{ borderColor: C.border, background: C.card }}
         >
           {(["allTime", "last90d"] as TimeWindow[]).map((w) => (
             <button
@@ -188,9 +208,9 @@ export default function LeaderboardPage() {
               onClick={() => setTimeWindow(w)}
               className="rounded-md px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{
-                background: timeWindow === w ? "#AC75FF" : "transparent",
-                color: timeWindow === w ? "#1A1919" : "#C7B79A",
-                outlineColor: "#AC75FF",
+                background: timeWindow === w ? C.accentFill : "transparent",
+                color: timeWindow === w ? C.onAccent : C.textSub,
+                outlineColor: C.accent,
               }}
             >
               {w === "allTime" ? "All-time" : "Last 90 days"}
@@ -211,27 +231,27 @@ export default function LeaderboardPage() {
                 onClick={() => setSelectedId(entry.person.accountId)}
                 className="rounded-xl border p-5 flex flex-col items-center text-center relative text-left transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{
-                  borderColor: isFirst ? "#AC75FF" : "#3D2C1A",
-                  background: "#292928",
+                  borderColor: isFirst ? C.accent : C.border,
+                  background: C.card,
                   order: entry.rank === 1 ? 0 : entry.rank,
                   paddingTop: isFirst ? "2rem" : "1.25rem",
                   boxShadow: isFirst
-                    ? "0 0 32px rgba(172,117,255,0.35)"
+                    ? "0 0 32px rgba(196,67,46,0.25)"
                     : undefined,
-                  outlineColor: "#AC75FF",
+                  outlineColor: C.accent,
                 }}
               >
                 <span className="text-3xl" aria-hidden="true">
                   {MEDAL[entry.rank - 1]}
                 </span>
-                <HoverAvatar person={entry.person} size={isFirst ? 96 : 76} />
+                <HoverAvatar person={entry.person} size={isFirst ? 96 : 76} C={C} />
                 <p className="mt-3 font-semibold">{entry.person.name}</p>
-                <p className="text-xs mt-1" style={{ color: "#9C8A6E" }}>
+                <p className="text-xs mt-1" style={{ color: C.textSub }}>
                   Rank #{entry.rank}
                 </p>
                 <p
                   className="mt-2 text-lg font-semibold"
-                  style={{ color: "#AC75FF" }}
+                  style={{ color: C.accent }}
                 >
                   {entry.score} pts
                 </p>
@@ -243,9 +263,9 @@ export default function LeaderboardPage() {
         {/* Scoring formula, transparent */}
         <div
           className="mt-8 rounded-lg border px-4 py-3 text-sm"
-          style={{ borderColor: "#3D2C1A", background: "#292928", color: "#C7B79A" }}
+          style={{ borderColor: C.border, background: C.card, color: C.textSub }}
         >
-          <span className="font-medium" style={{ color: "#F1E4CC" }}>
+          <span className="font-medium" style={{ color: C.text }}>
             Score formula:
           </span>{" "}
           (tickets done × 10) + (tickets in progress × 2). Backlog tickets
@@ -259,7 +279,7 @@ export default function LeaderboardPage() {
               Design team leaderboard, {timeWindow === "allTime" ? "all-time" : "last 90 days"}
             </caption>
             <thead>
-              <tr className="text-left" style={{ color: "#9C8A6E" }}>
+              <tr className="text-left" style={{ color: C.textSub }}>
                 <th className="px-3 py-2 font-medium">Rank</th>
                 <th className="px-3 py-2 font-medium">Designer</th>
                 <th className="px-3 py-2 font-medium">Score</th>
@@ -293,8 +313,8 @@ export default function LeaderboardPage() {
                     }}
                     className="rounded-lg transition-colors cursor-pointer hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{
-                      background: "#292928",
-                      outlineColor: "#AC75FF",
+                      background: C.card,
+                      outlineColor: C.accent,
                     }}
                   >
                     <td className="px-3 py-3 rounded-l-lg">
@@ -302,7 +322,7 @@ export default function LeaderboardPage() {
                       {delta !== 0 && (
                         <span
                           className="ml-2 text-xs"
-                          style={{ color: delta > 0 ? "#7FD98A" : "#E08A8A" }}
+                          style={{ color: delta > 0 ? C.up : C.down }}
                           title={`${delta > 0 ? "Up" : "Down"} ${Math.abs(delta)} vs the other window`}
                         >
                           {delta > 0 ? "▲" : "▼"}
@@ -312,14 +332,14 @@ export default function LeaderboardPage() {
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-3">
-                        <HoverAvatar person={entry.person} size={44} />
+                        <HoverAvatar person={entry.person} size={44} C={C} />
                         <span>{entry.person.name}</span>
                         {noData && (
                           <span
                             className="text-xs rounded-full px-2 py-0.5"
                             style={{
-                              background: "#3D2C1A",
-                              color: "#C7B79A",
+                              background: C.accentSoft,
+                              color: C.textSub,
                             }}
                           >
                             no scoped tickets
@@ -329,18 +349,18 @@ export default function LeaderboardPage() {
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold" style={{ color: "#AC75FF" }}>
+                        <span className="font-semibold" style={{ color: C.accent }}>
                           {entry.score}
                         </span>
                         <div
                           className="h-1.5 w-24 rounded-full overflow-hidden"
-                          style={{ background: "#3D2C1A" }}
+                          style={{ background: C.border }}
                         >
                           <div
                             className="h-full rounded-full"
                             style={{
                               width: `${(entry.score / maxScore) * 100}%`,
-                              background: "#AC75FF",
+                              background: C.accent,
                             }}
                           />
                         </div>
@@ -360,7 +380,7 @@ export default function LeaderboardPage() {
         {/* Caveats */}
         <div
           className="mt-10 text-xs space-y-1.5 max-w-3xl"
-          style={{ color: "#6B5A42" }}
+          style={{ color: C.textFaint }}
         >
           <p>
             Snapshot as of {asOf}. Scoring is ticket-count based — Jira has
@@ -411,6 +431,7 @@ export default function LeaderboardPage() {
           timeWindow={timeWindow}
           onClose={() => setSelectedId(null)}
           onPhotoUploaded={handlePhotoUploaded}
+          C={C}
         />
       )}
     </div>
@@ -420,9 +441,11 @@ export default function LeaderboardPage() {
 function HoverAvatar({
   person,
   size,
+  C,
 }: {
   person: LeaderboardPerson;
   size: number;
+  C: typeof COLORS;
 }) {
   const zoomSize = Math.round(size * 3.2);
   return (
@@ -430,7 +453,7 @@ function HoverAvatar({
       className="group relative inline-flex"
       style={{ width: size, height: size }}
     >
-      <Avatar person={person} size={size} />
+      <Avatar person={person} size={size} C={C} />
       <div
         className="pointer-events-none absolute left-1/2 bottom-full mb-3 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 origin-bottom z-20"
         style={{ transform: "translateX(-50%)" }}
@@ -440,12 +463,12 @@ function HoverAvatar({
           style={{
             width: zoomSize,
             height: zoomSize,
-            borderColor: "#AC75FF",
-            background: "#292928",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px #AC75FF",
+            borderColor: C.accent,
+            background: C.card,
+            boxShadow: `0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px ${C.accent}`,
           }}
         >
-          <Avatar person={person} size={zoomSize} square />
+          <Avatar person={person} size={zoomSize} C={C} square />
         </div>
       </div>
     </div>
@@ -455,10 +478,12 @@ function HoverAvatar({
 function Avatar({
   person,
   size,
+  C,
   square = false,
 }: {
   person: LeaderboardPerson;
   size: number;
+  C: typeof COLORS;
   square?: boolean;
 }) {
   if (person.photo) {
@@ -472,7 +497,7 @@ function Avatar({
         style={{
           width: size,
           height: size,
-          border: square ? "none" : "1px solid #3D2C1A",
+          border: square ? "none" : `1px solid ${C.border}`,
         }}
       />
     );
@@ -485,10 +510,10 @@ function Avatar({
       style={{
         width: size,
         height: size,
-        background: "#3D2C1A",
-        color: "#AC75FF",
+        background: C.accentSoft,
+        color: C.accent,
         fontSize: size * 0.32,
-        border: square ? "none" : "1px solid #3D2C1A",
+        border: square ? "none" : `1px solid ${C.border}`,
       }}
     >
       {initials(person.name)}
@@ -501,11 +526,13 @@ function PersonModal({
   timeWindow,
   onClose,
   onPhotoUploaded,
+  C,
 }: {
   entry: { person: LeaderboardPerson; score: number; rank: number };
   timeWindow: TimeWindow;
   onClose: () => void;
   onPhotoUploaded: (accountId: string, photo: string) => void;
+  C: typeof COLORS;
 }) {
   const { person, score: pts, rank } = entry;
   const bucket = bucketFor(person, timeWindow);
@@ -527,7 +554,7 @@ function PersonModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.7)" }}
+      style={{ background: "rgba(20,14,8,0.55)" }}
       onClick={onClose}
     >
       <div
@@ -537,9 +564,9 @@ function PersonModal({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-3xl rounded-2xl border overflow-hidden flex flex-col sm:flex-row"
         style={{
-          background: "#1A1919",
-          borderColor: "#3D2C1A",
-          color: "#F1E4CC",
+          background: C.bg,
+          borderColor: C.border,
+          color: C.text,
           fontFamily: "Inter, system-ui, sans-serif",
           maxHeight: "90vh",
         }}
@@ -547,7 +574,7 @@ function PersonModal({
         {/* Left: full-height portrait */}
         <div
           className="relative shrink-0 sm:w-64 h-56 sm:h-auto"
-          style={{ background: "#292928" }}
+          style={{ background: C.card }}
         >
           {person.photo ? (
             <Image
@@ -561,13 +588,14 @@ function PersonModal({
             <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-4">
               <div
                 className="font-semibold text-5xl"
-                style={{ color: "#AC75FF" }}
+                style={{ color: C.accent }}
               >
                 {initials(person.name)}
               </div>
               <PhotoUpload
                 accountId={person.accountId}
                 onUploaded={onPhotoUploaded}
+                C={C}
               />
             </div>
           )}
@@ -586,10 +614,10 @@ function PersonModal({
               <h2 id="person-modal-title" className="text-xl font-semibold">
                 {person.name}
               </h2>
-              <p className="text-sm mt-1" style={{ color: "#9C8A6E" }}>
+              <p className="text-sm mt-1" style={{ color: C.textSub }}>
                 Rank #{rank} · {timeWindow === "allTime" ? "All-time" : "Last 90 days"}
               </p>
-              <p className="text-lg font-semibold mt-1" style={{ color: "#AC75FF" }}>
+              <p className="text-lg font-semibold mt-1" style={{ color: C.accent }}>
                 {pts} pts
               </p>
             </div>
@@ -599,7 +627,7 @@ function PersonModal({
               onClick={onClose}
               aria-label="Close"
               className="rounded-full w-8 h-8 flex items-center justify-center text-lg shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ background: "#292928", color: "#F1E4CC", outlineColor: "#AC75FF" }}
+              style={{ background: C.card, color: C.text, outlineColor: C.accent }}
             >
               ×
             </button>
@@ -632,32 +660,32 @@ function PersonModal({
                 <div
                   key={stat.label}
                   className="rounded-lg px-3 py-2.5"
-                  style={{ background: "#292928" }}
+                  style={{ background: C.card }}
                 >
                   <p className="text-lg font-semibold leading-none">
                     {stat.value}
                   </p>
                   <p
                     className="text-[11px] font-medium mt-1"
-                    style={{ color: "#F1E4CC" }}
+                    style={{ color: C.text }}
                   >
                     {stat.label}
                   </p>
-                  <p className="text-[10px] mt-0.5 leading-tight" style={{ color: "#9C8A6E" }}>
+                  <p className="text-[10px] mt-0.5 leading-tight" style={{ color: C.textSub }}>
                     {stat.hint}
                   </p>
                 </div>
               ))}
             </div>
 
-            <h3 className="text-sm font-medium mb-2" style={{ color: "#F1E4CC" }}>
+            <h3 className="text-sm font-medium mb-2" style={{ color: C.text }}>
               Why they&rsquo;re ranked here
             </h3>
-            <p className="text-sm leading-relaxed" style={{ color: "#C7B79A" }}>
+            <p className="text-sm leading-relaxed" style={{ color: C.textSub }}>
               {rationale(person, timeWindow, rank, pts)}
             </p>
 
-            <h3 className="text-sm font-medium mt-5 mb-2" style={{ color: "#F1E4CC" }}>
+            <h3 className="text-sm font-medium mt-5 mb-2" style={{ color: C.text }}>
               Evidence — recent completed tickets
             </h3>
             {person.evidence.length > 0 ? (
@@ -669,21 +697,21 @@ function PersonModal({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                      style={{ background: "#292928", outlineColor: "#AC75FF" }}
+                      style={{ background: C.card, outlineColor: C.accent }}
                     >
                       <span
                         className="shrink-0 font-mono text-xs rounded px-1.5 py-0.5"
-                        style={{ background: "#3D2C1A", color: "#AC75FF" }}
+                        style={{ background: C.accentSoft, color: C.accent }}
                       >
                         {ev.key}
                       </span>
-                      <span style={{ color: "#F1E4CC" }}>{ev.summary}</span>
+                      <span style={{ color: C.text }}>{ev.summary}</span>
                     </a>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm" style={{ color: "#6B5A42" }}>
+              <p className="text-sm" style={{ color: C.textFaint }}>
                 No completed tickets in scope to show as evidence.
               </p>
             )}
@@ -697,9 +725,11 @@ function PersonModal({
 function PhotoUpload({
   accountId,
   onUploaded,
+  C,
 }: {
   accountId: string;
   onUploaded: (accountId: string, photo: string) => void;
+  C: typeof COLORS;
 }) {
   const [status, setStatus] = useState<"idle" | "uploading" | "error">(
     "idle"
@@ -744,15 +774,15 @@ function PhotoUpload({
         disabled={status === "uploading"}
         className="text-xs font-medium rounded-lg px-3 py-1.5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         style={{
-          background: "#3D2C1A",
-          color: "#AC75FF",
-          outlineColor: "#AC75FF",
+          background: C.accentSoft,
+          color: C.accent,
+          outlineColor: C.accent,
         }}
       >
         {status === "uploading" ? "Uploading…" : "Upload photo"}
       </button>
       {status === "error" && (
-        <p className="text-[10px] text-center px-2" style={{ color: "#E08A8A" }}>
+        <p className="text-[10px] text-center px-2" style={{ color: C.down }}>
           {errorMsg}
         </p>
       )}

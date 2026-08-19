@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import ThemeToggle from "./ThemeToggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,7 +12,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Anti-flash: apply a stored dark-mode preference before paint.
+            No stored value = light, regardless of OS setting. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(localStorage.getItem('theme')==='dark'){document.documentElement.dataset.theme='dark'}}catch(e){}",
+          }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col">
         <header className="border-b border-shadow-border">
           <nav className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 h-16">
@@ -39,11 +50,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Link>
               <Link
                 href="/internal"
-                className="rounded-full border border-amethyst px-3 sm:px-4 py-1.5 text-amethyst hover:bg-amethyst hover:text-shadow-heavy transition-colors whitespace-nowrap"
+                className="rounded-full border border-amethyst px-3 sm:px-4 py-1.5 text-amethyst-accessible hover:bg-amethyst hover:text-on-accent transition-colors whitespace-nowrap"
               >
                 <span className="hidden sm:inline">Designer sign-in</span>
                 <span className="sm:hidden">Sign in</span>
               </Link>
+              <ThemeToggle />
             </div>
           </nav>
         </header>
