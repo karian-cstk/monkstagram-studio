@@ -26,6 +26,9 @@ export type TopPerformerEntry = {
   score: number;
 };
 
+export type AgeBucket = { label: string; count: number };
+export type ProjectCount = { project: string; count: number };
+
 export type UnassignedItem = {
   key: string;
   summary: string;
@@ -70,6 +73,21 @@ export const topPerformers30d: TopPerformerEntry[] = [
   { accountId: "712020:14b1b096-c0be-482f-a340-09f298916e5a", name: "Amiya Chaturvedi", done: 0, inProgress: 0, backlog: 0, score: 0 },
   { accountId: "712020:64b2f104-8704-4e3b-ab16-67a595eca0ff", name: "Vishal Lokare", done: 0, inProgress: 0, backlog: 1, score: 0 },
   { accountId: "629da9f69248fe006910af34", name: "George Karian", done: 0, inProgress: 0, backlog: 0, score: 0 },
+];
+
+export const unassignedByProject: ProjectCount[] = [
+  { project: "PD", count: 4 },
+  { project: "UT", count: 34 },
+  { project: "UE", count: 952 },
+  { project: "PXD", count: 38 },
+];
+
+export const staleAgeBuckets: AgeBucket[] = [
+  { label: "20-90d", count: 29 },
+  { label: "90-180d", count: 81 },
+  { label: "180d-1yr", count: 130 },
+  { label: "1-2yr", count: 263 },
+  { label: "2yr+", count: 1099 },
 ];
 
 export const unassignedOpen: { totalCount: number; listTruncatedTo: number; items: UnassignedItem[] } = {

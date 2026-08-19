@@ -4,65 +4,65 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  dashboardAsOf as initialAsOf,
-  reopenedTickets as initialReopened,
-  staleTickets20d as initialStale,
+  reopenedTickets,
+  staleAgeBuckets,
+  staleTickets20d,
   topPerformers30d as initialTop30d,
-  unassignedOpen as initialUnassigned,
-  type ReopenedItem,
-  type StaleItem,
+  unassignedByProject,
+  unassignedOpen,
   type TopPerformerEntry,
-  type UnassignedItem,
 } from "@/content/dashboard";
 import { leaderboardPeople } from "@/content/leaderboard";
+
+// Light-theme dataviz tokens (validated categorical palette + reference
+// chart chrome from the dataviz skill — see references/palette.md).
+const INK = "#0b0b0b";
+const INK_SECONDARY = "#52514e";
+const MUTED = "#898781";
+const SURFACE = "#ffffff";
+const PAGE_BG = "#f9f9f7";
+const GRID = "#e1e0d9";
+const BORDER = "rgba(11,11,11,0.10)";
+const ACCENT = "#AC75FF";
+const CAT = { blue: "#2a78d6", orange: "#eb6834", aqua: "#1baf7a", yellow: "#eda100" };
+const SEQ_BLUE = ["#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281"];
 
 function initials(name: string) {
   return name
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
+    .map((p) => p[0]?.toUpperCase())
     .join("");
-}
-
-function daysAgo(iso: string) {
-  const ms = Date.now() - new Date(iso).getTime();
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
 }
 
 function photoFor(accountId: string) {
   return leaderboardPeople.find((p) => p.accountId === accountId)?.photo ?? null;
 }
 
-const CLASSIFICATION_COLOR: Record<ReopenedItem["classification"], string> = {
-  "new feature request": "#7FB8D9",
-  "design/scope change": "#AC75FF",
-  "bug/defect": "#E08A8A",
-  unclear: "#9C8A6E",
-};
+const EASE = "cubic-bezier(0.34, 1.56, 0.64, 1)";
+
+function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return mounted;
+}
 
 export default function DashboardPage() {
-  const [asOf, setAsOf] = useState(initialAsOf);
+  const mounted = useMounted();
+  const [top30d, setTop30d] = useState<TopPerformerEntry[]>(initialTop30d);
+  const [asOf, setAsOf] = useState<string | null>(null);
   const [live, setLive] = useState(false);
   const [liveError, setLiveError] = useState<string | null>(null);
   const [refreshState, setRefreshState] = useState<"idle" | "loading" | "done">("idle");
-
-  const [top30d, setTop30d] = useState<TopPerformerEntry[]>(initialTop30d);
-  const [unassigned, setUnassigned] = useState(initialUnassigned);
-  const [stale, setStale] = useState(initialStale);
-  const [reopened, setReopened] = useState<{
-    totalCount: number;
-    items: ReopenedItem[];
-    countChangedSinceAnalysis?: boolean;
-  }>(initialReopened);
 
   async function load() {
     const res = await fetch("/api/dashboard", { cache: "no-store" });
     const data = await res.json();
     setTop30d(data.topPerformers30d);
-    setUnassigned(data.unassignedOpen);
-    setStale(data.staleTickets20d);
-    setReopened(data.reopenedTickets);
     setAsOf(data.asOf);
     setLive(data.live);
     setLiveError(data.liveError);
@@ -82,260 +82,253 @@ export default function DashboardPage() {
     }
   }
 
-  const ranked = [...top30d].sort((a, b) => b.score - a.score);
-  const topPerformer = ranked[0];
+  const ranked = [...top30d].sort((a, b) => b.score - a.score).slice(0, 5);
+  const maxScore = Math.max(...ranked.map((r) => r.score), 1);
+
+  const unassignedTotal = unassignedByProject.reduce((s, p) => s + p.count, 0);
+  const staleTotal = staleAgeBuckets.reduce((s, b) => s + b.count, 0);
+  const maxStale = Math.max(...staleAgeBuckets.map((b) => b.count), 1);
+
+  const classificationCounts = [
+    { label: "unclear", count: reopenedTickets.items.filter((i) => i.classification === "unclear").length, color: MUTED },
+    { label: "bug/defect", count: reopenedTickets.items.filter((i) => i.classification === "bug/defect").length, color: CAT.orange },
+    { label: "design/scope change", count: reopenedTickets.items.filter((i) => i.classification === "design/scope change").length, color: CAT.blue },
+    { label: "new feature request", count: reopenedTickets.items.filter((i) => i.classification === "new feature request").length, color: CAT.aqua },
+  ].filter((c) => c.count > 0);
+  const maxClass = Math.max(...classificationCounts.map((c) => c.count), 1);
 
   return (
-    <div className="min-h-screen" style={{ background: "#1A1919", color: "#F1E4CC" }}>
-      <div
-        className="max-w-5xl mx-auto px-6 py-16"
-        style={{ fontFamily: "Inter, system-ui, sans-serif" }}
-      >
-        <p className="text-sm tracking-widest uppercase mb-4" style={{ color: "#AC75FF" }}>
+    <div className="min-h-screen" style={{ background: PAGE_BG, color: INK, fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif" }}>
+      <div className="max-w-5xl mx-auto px-6 py-16">
+        <p className="text-sm tracking-widest uppercase mb-4 font-medium" style={{ color: ACCENT }}>
           Design Team Dashboard
         </p>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl">
-              What&rsquo;s moving, what&rsquo;s stuck.
+              What&rsquo;s moving, what&rsquo;s stuck. 📊
             </h1>
-            <p className="mt-3 max-w-2xl text-sm" style={{ color: "#9C8A6E" }}>
-              Live-pulled from Jira boards PD, UT, UE, PXD.
+            <p className="mt-3 max-w-2xl text-sm" style={{ color: INK_SECONDARY }}>
+              Live-pulled from Jira boards PD, UT, UE, PXD. Click any chart for the full list.
             </p>
           </div>
           <button
             type="button"
             onClick={handleRefresh}
             disabled={refreshState === "loading"}
-            className="rounded-lg px-4 py-2 text-sm font-medium border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            style={{
-              borderColor: "#3D2C1A",
-              background: "#292928",
-              color: "#F1E4CC",
-              outlineColor: "#AC75FF",
-            }}
+            className="rounded-lg px-4 py-2 text-sm font-medium border transition-all hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ borderColor: BORDER, background: SURFACE, color: INK, outlineColor: ACCENT }}
           >
-            {refreshState === "loading"
-              ? "Refreshing…"
-              : refreshState === "done"
-                ? "Snapshot is current ✓"
-                : "Refresh"}
+            {refreshState === "loading" ? "Refreshing…" : refreshState === "done" ? "Current ✓" : "Refresh"}
           </button>
         </div>
 
-        {/* Top performer teaser */}
-        {topPerformer && (
-          <Link
-            href="/leaderboard"
-            className="mt-10 flex items-center gap-5 rounded-2xl border p-6 transition-transform hover:-translate-y-0.5"
-            style={{
-              borderColor: "#AC75FF",
-              background: "#292928",
-              boxShadow: "0 0 32px rgba(172,117,255,0.2)",
-            }}
-          >
-            {photoFor(topPerformer.accountId) ? (
+        {/* Top performer — emphasis bar chart */}
+        <Link
+          href="/leaderboard"
+          className="mt-10 block rounded-2xl border p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+          style={{ borderColor: BORDER, background: SURFACE }}
+        >
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <p className="text-xs uppercase tracking-wide font-medium" style={{ color: ACCENT }}>
+                🏆 Top performers · last 30 days
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: MUTED }}>
+                Score = done×10 + in-progress×2. Click to open the full leaderboard →
+              </p>
+            </div>
+            {photoFor(ranked[0]?.accountId ?? "") ? (
               <Image
-                src={photoFor(topPerformer.accountId)!}
-                alt={topPerformer.name}
-                width={72}
-                height={72}
+                src={photoFor(ranked[0].accountId)!}
+                alt={ranked[0].name}
+                width={56}
+                height={56}
                 className="rounded-full object-cover"
-                style={{ width: 72, height: 72, border: "1px solid #3D2C1A" }}
+                style={{ width: 56, height: 56, border: `1px solid ${BORDER}` }}
               />
             ) : (
               <div
-                className="rounded-full flex items-center justify-center font-semibold shrink-0"
-                style={{ width: 72, height: 72, background: "#3D2C1A", color: "#AC75FF", fontSize: 24 }}
+                className="rounded-full flex items-center justify-center font-semibold"
+                style={{ width: 56, height: 56, background: "#f0e9ff", color: ACCENT }}
               >
-                {initials(topPerformer.name)}
+                {ranked[0] && initials(ranked[0].name)}
               </div>
             )}
-            <div className="flex-1">
-              <p className="text-xs uppercase tracking-wide" style={{ color: "#AC75FF" }}>
-                Top performer · last 30 days
-              </p>
-              <p className="text-xl font-semibold mt-1">{topPerformer.name}</p>
-              <p className="text-sm mt-0.5" style={{ color: "#9C8A6E" }}>
-                {topPerformer.done} done · {topPerformer.inProgress} in progress · {topPerformer.score} pts
-              </p>
-            </div>
-            <span className="text-sm shrink-0" style={{ color: "#AC75FF" }}>
-              View full leaderboard →
-            </span>
-          </Link>
-        )}
-
-        {/* Widgets grid */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Unassigned tickets */}
-          <div className="rounded-xl border p-5" style={{ borderColor: "#3D2C1A", background: "#292928" }}>
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-sm font-medium" style={{ color: "#F1E4CC" }}>
-                Unassigned tickets
-              </h2>
-              <span className="text-2xl font-semibold" style={{ color: "#AC75FF" }}>
-                {unassigned.totalCount}
-              </span>
-            </div>
-            <p className="text-xs mt-1" style={{ color: "#9C8A6E" }}>
-              Open (not Done), no assignee, across PD/UT/UE/PXD — includes contributors beyond
-              the tracked design roster and years of backlog.
-            </p>
-            <ul className="mt-3 space-y-1.5 max-h-72 overflow-y-auto pr-1">
-              {unassigned.items.map((item: UnassignedItem) => (
-                <li key={item.key}>
-                  <a
-                    href={item.webUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors hover:brightness-110"
-                    style={{ background: "#1A1919" }}
-                  >
-                    <span
-                      className="shrink-0 font-mono rounded px-1 py-0.5"
-                      style={{ background: "#3D2C1A", color: "#AC75FF" }}
-                    >
-                      {item.key}
-                    </span>
-                    <span className="flex-1" style={{ color: "#C7B79A" }}>
-                      {item.summary}
-                    </span>
-                    <span className="shrink-0" style={{ color: "#6B5A42" }}>
-                      {daysAgo(item.created)}d old
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-            {unassigned.totalCount > unassigned.listTruncatedTo && (
-              <p className="text-[11px] mt-2" style={{ color: "#6B5A42" }}>
-                Showing the {unassigned.listTruncatedTo} oldest of {unassigned.totalCount} total.
-              </p>
-            )}
           </div>
-
-          {/* Stale tickets */}
-          <div className="rounded-xl border p-5" style={{ borderColor: "#3D2C1A", background: "#292928" }}>
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-sm font-medium" style={{ color: "#F1E4CC" }}>
-                Pending &gt; 20 days
-              </h2>
-              <span className="text-2xl font-semibold" style={{ color: "#AC75FF" }}>
-                {stale.totalCount}
-              </span>
-            </div>
-            <p className="text-xs mt-1" style={{ color: "#9C8A6E" }}>
-              Not Done, created 20+ days ago — measures backlog age, not recent stagnation.
-            </p>
-            <ul className="mt-3 space-y-1.5 max-h-72 overflow-y-auto pr-1">
-              {stale.items.map((item: StaleItem) => (
-                <li key={item.key}>
-                  <a
-                    href={item.webUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors hover:brightness-110"
-                    style={{ background: "#1A1919" }}
-                  >
-                    <span
-                      className="shrink-0 font-mono rounded px-1 py-0.5"
-                      style={{ background: "#3D2C1A", color: "#AC75FF" }}
-                    >
-                      {item.key}
-                    </span>
-                    <span className="flex-1" style={{ color: "#C7B79A" }}>
-                      {item.summary}
-                    </span>
-                    <span className="shrink-0" style={{ color: "#6B5A42" }}>
-                      {daysAgo(item.created)}d
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-            {stale.totalCount > stale.listTruncatedTo && (
-              <p className="text-[11px] mt-2" style={{ color: "#6B5A42" }}>
-                Showing the {stale.listTruncatedTo} oldest of {stale.totalCount} total.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Reopened tickets */}
-        <div
-          className="mt-5 rounded-xl border p-5"
-          style={{ borderColor: "#3D2C1A", background: "#292928" }}
-        >
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-sm font-medium" style={{ color: "#F1E4CC" }}>
-              Reopened after Done
-            </h2>
-            <span className="text-2xl font-semibold" style={{ color: "#AC75FF" }}>
-              {reopened.totalCount}
-            </span>
-          </div>
-          <p className="text-xs mt-1" style={{ color: "#9C8A6E" }}>
-            Tickets that left a Done-family status (Done, Ready to Deploy, Archived) and are
-            active again. The reason is Claude&rsquo;s read of each ticket&rsquo;s comments — not
-            a Jira field — verify before treating it as fact.
-          </p>
-          {reopened.countChangedSinceAnalysis && (
-            <p className="text-[11px] mt-1" style={{ color: "#E08A8A" }}>
-              Live count ({reopened.totalCount}) differs from the last full analysis — some of
-              these reasons may be stale or a new reopened ticket may be missing below.
-            </p>
-          )}
-          <ul className="mt-3 space-y-2">
-            {reopened.items.map((item) => (
-              <li
-                key={item.key}
-                className="rounded-lg p-3"
-                style={{ background: "#1A1919" }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <a
-                    href={item.webUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm hover:brightness-110"
-                  >
-                    <span
-                      className="shrink-0 font-mono text-xs rounded px-1.5 py-0.5"
-                      style={{ background: "#3D2C1A", color: "#AC75FF" }}
-                    >
-                      {item.key}
-                    </span>
-                    <span style={{ color: "#F1E4CC" }}>{item.summary}</span>
-                  </a>
-                  <span
-                    className="shrink-0 text-[10px] rounded-full px-2 py-0.5 whitespace-nowrap"
+          <div className="space-y-2.5">
+            {ranked.map((p, i) => (
+              <div key={p.accountId} className="flex items-center gap-3">
+                <span className="text-xs w-32 shrink-0 truncate font-medium" style={{ color: i === 0 ? INK : INK_SECONDARY }}>
+                  {p.name}
+                </span>
+                <div className="flex-1 h-6 rounded-full overflow-hidden" style={{ background: GRID }}>
+                  <div
+                    className="h-full rounded-full flex items-center justify-end px-2"
                     style={{
-                      background: "#292928",
-                      color: CLASSIFICATION_COLOR[item.classification],
-                      border: `1px solid ${CLASSIFICATION_COLOR[item.classification]}`,
+                      width: mounted ? `${(p.score / maxScore) * 100}%` : "0%",
+                      background: i === 0 ? ACCENT : "#c7bfd9",
+                      transition: `width 900ms ${EASE}`,
+                      transitionDelay: `${i * 80}ms`,
                     }}
                   >
-                    {item.classification}
-                  </span>
+                    <span className="text-[11px] font-semibold text-white whitespace-nowrap">
+                      {p.score}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs mt-2" style={{ color: "#9C8A6E" }}>
-                  {item.inferredReason}
-                </p>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
+        </Link>
+
+        {/* Widgets grid */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Unassigned — stacked bar part-to-whole */}
+          <Link
+            href="/dashboard/unassigned"
+            className="rounded-2xl border p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+            style={{ borderColor: BORDER, background: SURFACE }}
+          >
+            <p className="text-xs uppercase tracking-wide font-medium" style={{ color: ACCENT }}>
+              📥 Unassigned tickets
+            </p>
+            <p className="text-4xl font-semibold mt-2" style={{ color: INK }}>
+              {unassignedTotal.toLocaleString()}
+            </p>
+            <p className="text-xs mt-1 mb-4" style={{ color: MUTED }}>
+              Open, no assignee — by board. Click for the full list →
+            </p>
+            <div className="h-8 rounded-lg overflow-hidden flex" style={{ background: GRID }}>
+              {unassignedByProject.map((p, i) => {
+                const pct = (p.count / unassignedTotal) * 100;
+                const colors = [CAT.blue, CAT.orange, CAT.aqua, CAT.yellow];
+                return (
+                  <div
+                    key={p.project}
+                    className="h-full flex items-center justify-center relative"
+                    style={{
+                      width: mounted ? `${pct}%` : "0%",
+                      background: colors[i % colors.length],
+                      transition: `width 900ms ${EASE}`,
+                      transitionDelay: `${i * 60}ms`,
+                      borderRight: i < unassignedByProject.length - 1 ? `2px solid ${SURFACE}` : "none",
+                    }}
+                    title={`${p.project}: ${p.count}`}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
+              {unassignedByProject.map((p, i) => {
+                const colors = [CAT.blue, CAT.orange, CAT.aqua, CAT.yellow];
+                return (
+                  <span key={p.project} className="flex items-center gap-1.5 text-xs" style={{ color: INK_SECONDARY }}>
+                    <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: colors[i % colors.length] }} />
+                    {p.project} · {p.count.toLocaleString()}
+                  </span>
+                );
+              })}
+            </div>
+          </Link>
+
+          {/* Stale — sequential histogram */}
+          <Link
+            href="/dashboard/stale"
+            className="rounded-2xl border p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+            style={{ borderColor: BORDER, background: SURFACE }}
+          >
+            <p className="text-xs uppercase tracking-wide font-medium" style={{ color: ACCENT }}>
+              ⏳ Pending &gt; 20 days
+            </p>
+            <p className="text-4xl font-semibold mt-2" style={{ color: INK }}>
+              {staleTotal.toLocaleString()}
+            </p>
+            <p className="text-xs mt-1 mb-4" style={{ color: MUTED }}>
+              Not Done, by age since created. Click for the full list →
+            </p>
+            <div className="flex items-end gap-2 h-24">
+              {staleAgeBuckets.map((b, i) => (
+                <div key={b.label} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
+                  <span className="text-[10px] font-medium" style={{ color: INK_SECONDARY }}>
+                    {b.count}
+                  </span>
+                  <div
+                    className="w-full rounded-t-md"
+                    style={{
+                      height: mounted ? `${(b.count / maxStale) * 100}%` : "0%",
+                      minHeight: mounted ? 3 : 0,
+                      background: SEQ_BLUE[i],
+                      transition: `height 900ms ${EASE}`,
+                      transitionDelay: `${i * 70}ms`,
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-2">
+              {staleAgeBuckets.map((b) => (
+                <span key={b.label} className="flex-1 text-center text-[10px]" style={{ color: MUTED }}>
+                  {b.label}
+                </span>
+              ))}
+            </div>
+          </Link>
         </div>
 
+        {/* Reopened — categorical bar */}
+        <Link
+          href="/dashboard/reopened"
+          className="mt-5 block rounded-2xl border p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+          style={{ borderColor: BORDER, background: SURFACE }}
+        >
+          <p className="text-xs uppercase tracking-wide font-medium" style={{ color: ACCENT }}>
+            ♻️ Reopened after Done
+          </p>
+          <p className="text-4xl font-semibold mt-2" style={{ color: INK }}>
+            {reopenedTickets.totalCount}
+          </p>
+          <p className="text-xs mt-1 mb-4" style={{ color: MUTED }}>
+            By inferred reason (Claude&rsquo;s read of each ticket — verify before treating as
+            fact). Click for details →
+          </p>
+          <div className="space-y-2">
+            {classificationCounts.map((c, i) => (
+              <div key={c.label} className="flex items-center gap-3">
+                <span className="text-xs w-40 shrink-0" style={{ color: INK_SECONDARY }}>
+                  {c.label}
+                </span>
+                <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ background: GRID }}>
+                  <div
+                    className="h-full rounded-full flex items-center justify-end px-2"
+                    style={{
+                      width: mounted ? `${(c.count / maxClass) * 100}%` : "0%",
+                      background: c.color,
+                      transition: `width 900ms ${EASE}`,
+                      transitionDelay: `${i * 80}ms`,
+                    }}
+                  >
+                    <span className="text-[10px] font-semibold text-white">{c.count}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Link>
+
         {/* Caveats */}
-        <div className="mt-8 text-xs space-y-1.5 max-w-3xl" style={{ color: "#6B5A42" }}>
-          <p>Snapshot as of {asOf}.</p>
+        <div className="mt-8 text-xs space-y-1.5 max-w-3xl" style={{ color: MUTED }}>
+          <p>Snapshot as of {asOf ?? "…"}.</p>
           <p>
             {live
-              ? "Refresh re-queries Jira directly — a live snapshot, not a cached one. Reopened-ticket reasons are the exception: only their count re-checks live."
+              ? "Refresh re-queries Jira directly for the top-performer, unassigned, and stale widgets — a live snapshot, not cached."
               : liveError
                 ? `Refresh attempted a live Jira query and failed (${liveError}) — showing the last known-good snapshot.`
-                : "Refresh re-fetches the last generated snapshot — live re-query needs JIRA_BASE_URL / JIRA_EMAIL / JIRA_API_TOKEN configured on the server, same as the leaderboard page."}
+                : "Refresh re-fetches the last generated snapshot — live re-query needs JIRA_BASE_URL / JIRA_EMAIL / JIRA_API_TOKEN configured on the server."}
+          </p>
+          <p>
+            Unassigned and stale counts include contributors beyond the 12 tracked designers and
+            years of backlog — that&rsquo;s real, not a bug.
           </p>
         </div>
       </div>
