@@ -14,26 +14,32 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="min-h-screen flex flex-col">
         <header className="border-b border-shadow-border">
-          <nav className="max-w-6xl mx-auto flex items-center justify-between px-6 py-5">
-            <Link href="/" className="flex items-center gap-3">
+          <nav className="max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-6 h-16">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
               <Image src="/logomark.svg" alt="" width={20} height={24} priority />
-              <span className="font-semibold tracking-tight">Monkstagram Studio</span>
+              <span className="hidden sm:inline font-semibold tracking-tight whitespace-nowrap">
+                Monkstagram Studio
+              </span>
             </Link>
-            <div className="flex items-center gap-6 text-sm text-subtle">
-              <Link href="/" className="hover:text-crystal-clear transition-colors">
-                Thesis
+            <div className="flex items-center gap-4 sm:gap-6 text-sm text-subtle">
+              <Link href="/leaderboard" className="hidden md:inline hover:text-crystal-clear transition-colors">
+                Design Leaderboard
               </Link>
-              <Link href="/ui-kit" className="hover:text-crystal-clear transition-colors">
+              <Link href="/ui-kit" className="hidden md:inline hover:text-crystal-clear transition-colors">
                 UI Kit
               </Link>
-              <Link href="/changelog" className="hover:text-crystal-clear transition-colors">
-                Changelog
+              <Link href="/upcoming" className="hidden md:inline hover:text-crystal-clear transition-colors">
+                Upcoming Design
+              </Link>
+              <Link href="/blog" className="hidden md:inline hover:text-crystal-clear transition-colors">
+                Blogs
               </Link>
               <Link
                 href="/internal"
-                className="rounded-full border border-amethyst px-4 py-1.5 text-amethyst hover:bg-amethyst hover:text-shadow-heavy transition-colors"
+                className="rounded-full border border-amethyst px-3 sm:px-4 py-1.5 text-amethyst hover:bg-amethyst hover:text-shadow-heavy transition-colors whitespace-nowrap"
               >
-                Designer sign-in
+                <span className="hidden sm:inline">Designer sign-in</span>
+                <span className="sm:hidden">Sign in</span>
               </Link>
             </div>
           </nav>

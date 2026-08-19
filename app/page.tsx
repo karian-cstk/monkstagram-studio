@@ -4,61 +4,73 @@ import { ledger } from "@/content/ledger";
 import { uiKitComponents } from "@/content/ui-kit";
 import { changelog } from "@/content/changelog";
 import TeamSection from "./TeamSection";
+import HeroSky from "./HeroSky";
 
 export default function Home() {
   return (
     <div>
-      {/* Hero — the thesis, built around the Design Monks label */}
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 60% 50% at 50% 20%, rgba(196,67,46,0.14), transparent 70%), radial-gradient(ellipse 50% 40% at 80% 10%, rgba(200,162,74,0.10), transparent 70%)",
-          }}
-        />
-        <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-8 grid md:grid-cols-[1fr_320px] gap-12 items-center">
-          <div>
-            <p className="label-eyebrow text-xs text-periwinkle uppercase mb-4">
-              7 Years Old &middot; Blended &middot; Contentstack
-            </p>
-            <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight leading-[1.02]">
-              Design
-              <br />
-              <span className="text-amethyst">Ascendancy</span>
-            </h1>
-            <p className="mt-6 max-w-lg text-lg text-subtle leading-relaxed">
-              Monkstagram Studio is Contentstack design&rsquo;s public ledger:
-              what we built, why we built it that way, and where AI did the
-              heavy lifting. It&rsquo;s also home to the Venus UI Kit, its
-              changelog, and — for our own designers only — a governance
-              portal and an AI consultant trained on our system.
-            </p>
-            <div className="mt-10 flex flex-wrap gap-4">
-              <Link
-                href="/ui-kit"
-                className="rounded-full bg-amethyst text-shadow-heavy font-medium px-6 py-3 hover:opacity-90 transition-opacity"
-              >
-                Browse the UI Kit
-              </Link>
-              <Link
-                href="/changelog"
-                className="rounded-full border border-shadow-border px-6 py-3 hover:border-amethyst transition-colors"
-              >
-                Read the changelog
-              </Link>
-            </div>
-          </div>
-          <div className="justify-self-center">
+      {/* Hero — the whole thesis in a single breath */}
+      <section className="relative min-h-[calc(100svh-65px)] w-full overflow-hidden flex items-center justify-center py-16">
+        <div aria-hidden className="hero-base" />
+        <div aria-hidden className="hero-stars-far" />
+        <div aria-hidden className="hero-stars-near" />
+        <HeroSky />
+        <div aria-hidden className="hero-vignette" />
+
+        <div className="relative z-10 flex flex-col items-center text-center px-6 gap-5">
+          <p className="label-eyebrow text-xs text-periwinkle uppercase">
+            7 Years Old &middot; Blended &middot; Contentstack
+          </p>
+          <div className="relative flex flex-col items-center">
+            <div aria-hidden className="bottle-glow" />
             <Image
               src="/design-monks-bottle.png"
               alt="Design Monks — 7 Years Old Blended"
-              width={320}
-              height={480}
+              width={592}
+              height={574}
               priority
-              className="drop-shadow-[0_20px_60px_rgba(196,67,46,0.25)]"
+              className="bottle-float bottle-blend relative w-[clamp(220px,40vmin,560px)] h-auto drop-shadow-[0_20px_60px_rgba(196,67,46,0.35)]"
             />
+            <div
+              aria-hidden
+              className="bottle-reflection-wrap w-[clamp(220px,40vmin,560px)] overflow-hidden -mt-1"
+              style={{ height: "clamp(40px,8vmin,110px)" }}
+            >
+              <Image
+                aria-hidden
+                src="/design-monks-bottle.png"
+                alt=""
+                width={592}
+                height={574}
+                className="bottle-reflection w-full h-auto"
+              />
+            </div>
+          </div>
+          <h1 className="font-display font-extrabold tracking-tight leading-[1.15] text-[clamp(30px,6.2vh,68px)]">
+            Design
+            <br />
+            <span className="text-amethyst">Ascendancy</span>
+          </h1>
+          <p className="max-w-lg text-subtle leading-relaxed text-[clamp(13px,1.8vh,18px)]">
+            Monkstagram Studio is Contentstack design&rsquo;s public ledger:
+            what we built, why we built it that way, and where AI did the
+            heavy lifting. It&rsquo;s also home to the Venus UI Kit, its
+            changelog, and — for our own designers only — a governance
+            portal and an AI consultant trained on our system.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 mt-2">
+            <Link
+              href="/ui-kit"
+              className="rounded-full bg-amethyst text-shadow-heavy font-medium px-6 py-3 hover:opacity-90 transition-opacity"
+            >
+              Browse the UI Kit
+            </Link>
+            <Link
+              href="/changelog"
+              className="rounded-full border border-shadow-border px-6 py-3 hover:border-amethyst transition-colors"
+            >
+              Read the changelog
+            </Link>
           </div>
         </div>
       </section>
@@ -118,7 +130,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="flex items-baseline justify-between mb-10">
             <h2 className="text-2xl font-semibold">Latest changes</h2>
-            <Link href="/changelog" className="text-sm text-amethyst hover:underline">
+            <Link href="/ui-kit#changelog" className="text-sm text-amethyst hover:underline">
               Full changelog →
             </Link>
           </div>

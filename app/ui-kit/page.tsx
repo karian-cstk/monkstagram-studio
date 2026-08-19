@@ -1,8 +1,14 @@
 import { uiKitComponents } from "@/content/ui-kit";
+import { changelog } from "@/content/changelog";
+import { iconsCore } from "@/content/icons-core";
+import { iconsExtended } from "@/content/icons-extended";
+import UIKitTabs from "./UIKitTabs";
 
 export const metadata = { title: "UI Kit — Monkstagram Studio" };
 
 export default function UIKitPage() {
+  const icons = [...iconsCore, ...iconsExtended];
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-16">
       <p className="ledger-line text-sm text-amethyst tracking-widest uppercase mb-4">
@@ -12,25 +18,12 @@ export default function UIKitPage() {
         Every component, and why it exists.
       </h1>
       <p className="mt-4 max-w-2xl text-subtle">
-        This is the public face of Venus, our internal design system. Each entry
+        This is the public face of Venus, our internal design system — its
+        components, icon library, and changelog, together. Each entry
         includes the rationale behind it — not just what it does.
       </p>
 
-      <div className="mt-12 grid md:grid-cols-2 gap-6">
-        {uiKitComponents.map((c) => (
-          <article key={c.name} className="rounded-xl bg-shadow-card border border-shadow-border p-6">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg font-semibold">{c.name}</h2>
-              <span className="text-xs text-muted">{c.category}</span>
-            </div>
-            <p className="text-subtle mb-4">{c.description}</p>
-            <p className="text-sm text-mint">
-              <span className="text-muted">Why — </span>
-              {c.rationale}
-            </p>
-          </article>
-        ))}
-      </div>
+      <UIKitTabs components={uiKitComponents} changelog={changelog} icons={icons} />
     </div>
   );
 }
