@@ -22,6 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </span>
             </Link>
             <div className="flex items-center gap-4 sm:gap-6 text-sm text-subtle">
+              <Link href="/dashboard" className="hidden md:inline hover:text-crystal-clear transition-colors">
+                Dashboard
+              </Link>
               <Link href="/leaderboard" className="hidden md:inline hover:text-crystal-clear transition-colors">
                 Design Leaderboard
               </Link>
