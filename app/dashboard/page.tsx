@@ -4,12 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
+  ongoingTickets as initialOngoing,
   reopenedTickets,
   staleAgeBuckets,
   staleTickets20d,
   topPerformers30d as initialTop30d,
   unassignedByProject,
   unassignedOpen,
+  type OngoingItem,
   type TopPerformerEntry,
 } from "@/content/dashboard";
 import { leaderboardPeople } from "@/content/leaderboard";
@@ -63,6 +65,7 @@ function useMounted() {
 export default function DashboardPage() {
   const mounted = useMounted();
   const [top30d, setTop30d] = useState<TopPerformerEntry[]>(initialTop30d);
+  const [ongoing, setOngoing] = useState<OngoingItem[]>(initialOngoing);
   const [asOf, setAsOf] = useState<string | null>(null);
   const [live, setLive] = useState(false);
   const [liveError, setLiveError] = useState<string | null>(null);
@@ -72,6 +75,7 @@ export default function DashboardPage() {
     const res = await fetch("/api/dashboard", { cache: "no-store" });
     const data = await res.json();
     setTop30d(data.topPerformers30d);
+    setOngoing(data.ongoingTickets);
     setAsOf(data.asOf);
     setLive(data.live);
     setLiveError(data.liveError);
@@ -97,6 +101,26 @@ export default function DashboardPage() {
   const unassignedTotal = unassignedByProject.reduce((s, p) => s + p.count, 0);
   const staleTotal = staleAgeBuckets.reduce((s, b) => s + b.count, 0);
   const maxStale = Math.max(...staleAgeBuckets.map((b) => b.count), 1);
+
+  const ongoingByStatus = (() => {
+    const known = ["In Progress", "Selected for Development", "Review", "QA"];
+    const counts = new Map<string, number>();
+    for (const item of ongoing) {
+      const bucket = known.includes(item.status) ? item.status : "Other";
+      counts.set(bucket, (counts.get(bucket) ?? 0) + 1);
+    }
+    const colors: Record<string, string> = {
+      "In Progress": CAT.blue,
+      "Selected for Development": CAT.orange,
+      Review: CAT.aqua,
+      QA: CAT.yellow,
+      Other: MUTED,
+    };
+    return [...known, "Other"]
+      .map((status) => ({ status, count: counts.get(status) ?? 0, color: colors[status] }))
+      .filter((s) => s.count > 0);
+  })();
+  const maxOngoing = Math.max(...ongoingByStatus.map((s) => s.count), 1);
 
   const classificationCounts = [
     { label: "unclear", count: reopenedTickets.items.filter((i) => i.classification === "unclear").length, color: MUTED },
@@ -288,6 +312,47 @@ export default function DashboardPage() {
           </Link>
         </div>
 
+        {/* Ongoing — categorical bar by status */}
+        <Link
+          href="/dashboard/ongoing"
+          className="mt-5 block rounded-2xl border p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+          style={{ borderColor: BORDER, background: SURFACE }}
+        >
+          <p className="text-xs uppercase tracking-wide font-medium" style={{ color: ACCENT }}>
+            Ongoing today
+          </p>
+          <p className="text-4xl font-semibold mt-2" style={{ color: INK }}>
+            {ongoing.length}
+          </p>
+          <p className="text-xs mt-1 mb-4" style={{ color: MUTED }}>
+            Currently active tickets across PD/UT/UE/PXD, any assignee, as of today. Click for
+            owner + status on every ticket →
+          </p>
+          <div className="space-y-2">
+            {ongoingByStatus.map((s, i) => (
+              <div key={s.status} className="flex items-center gap-3">
+                <span className="text-xs w-44 shrink-0" style={{ color: INK_SECONDARY }}>
+                  {s.status}
+                </span>
+                <div className="flex-1 h-5 rounded-full overflow-hidden" style={{ background: GRID }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: mounted ? `${(s.count / maxOngoing) * 100}%` : "0%",
+                      background: s.color,
+                      transition: `width 900ms ${EASE}`,
+                      transitionDelay: `${i * 80}ms`,
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-semibold w-8 text-right shrink-0" style={{ color: INK }}>
+                  {s.count}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Link>
+
         {/* Reopened — categorical bar */}
         <Link
           href="/dashboard/reopened"
@@ -334,7 +399,7 @@ export default function DashboardPage() {
           <p>Snapshot as of {asOf ?? "…"}.</p>
           <p>
             {live
-              ? "Refresh re-queries Jira directly for the top-performer, unassigned, and stale widgets — a live snapshot, not cached."
+              ? "Refresh re-queries Jira directly for the top-performer, unassigned, stale, and ongoing widgets — a live snapshot, not cached."
               : liveError
                 ? `Refresh attempted a live Jira query and failed (${liveError}) — showing the last known-good snapshot.`
                 : "Refresh re-fetches the last generated snapshot — live re-query needs JIRA_BASE_URL / JIRA_EMAIL / JIRA_API_TOKEN configured on the server."}

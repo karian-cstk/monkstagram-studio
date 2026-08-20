@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   dashboardAsOf,
+  ongoingTickets,
   reopenedTickets,
   staleTickets20d,
   topPerformers30d,
@@ -9,11 +10,11 @@ import {
 import { isJiraConfigured } from "@/lib/jira";
 import { fetchLiveDashboard } from "@/lib/dashboardLive";
 
-// Same live/fallback pattern as /api/leaderboard. Widgets 1-3 fully
-// re-query Jira when configured; widget 4 (reopened, with inferred
-// reasons) only re-checks the count live — the reasons themselves are
-// an analysis pull, not something a plain JQL call can regenerate. See
-// lib/dashboardLive.ts.
+// Same live/fallback pattern as /api/leaderboard. Widgets 1-3 and the
+// ongoing-tickets widget fully re-query Jira when configured; widget 4
+// (reopened, with inferred reasons) only re-checks the count live — the
+// reasons themselves are an analysis pull, not something a plain JQL call
+// can regenerate. See lib/dashboardLive.ts.
 export async function GET() {
   if (isJiraConfigured()) {
     try {
@@ -25,6 +26,7 @@ export async function GET() {
         topPerformers30d: liveData.topPerformers30d,
         unassignedOpen: liveData.unassignedOpen,
         staleTickets20d: liveData.staleTickets20d,
+        ongoingTickets: liveData.ongoingTickets,
         reopenedTickets: {
           totalCount: liveData.reopenedCount,
           items: reopenedTickets.items,
@@ -40,6 +42,7 @@ export async function GET() {
         topPerformers30d,
         unassignedOpen,
         staleTickets20d,
+        ongoingTickets,
         reopenedTickets: { ...reopenedTickets, countChangedSinceAnalysis: false },
       });
     }
@@ -52,6 +55,7 @@ export async function GET() {
     topPerformers30d,
     unassignedOpen,
     staleTickets20d,
+    ongoingTickets,
     reopenedTickets: { ...reopenedTickets, countChangedSinceAnalysis: false },
   });
 }

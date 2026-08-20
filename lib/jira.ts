@@ -45,6 +45,34 @@ export async function runJqlSearch(
   return data.issues as any[];
 }
 
+// Paginated variant of runJqlSearch — the classic search endpoint caps a
+// single page at 100 regardless of the requested maxResults, so anything
+// expecting more than ~100 results needs this instead. Capped at 500 total
+// as a safety valve (well above any of this dashboard's real result sizes).
+export async function runJqlSearchAll(
+  jql: string,
+  fields: string[]
+): Promise<any[]> {
+  const baseUrl = process.env.JIRA_BASE_URL!;
+  const all: any[] = [];
+  let startAt = 0;
+  const pageSize = 100;
+  while (all.length < 500) {
+    const url = `${baseUrl}/rest/api/3/search?jql=${encodeURIComponent(
+      jql
+    )}&fields=${fields.join(",")}&maxResults=${pageSize}&startAt=${startAt}`;
+    const res = await fetch(url, { headers: authHeader(), cache: "no-store" });
+    if (!res.ok) {
+      throw new Error(`Jira request failed (${res.status}): ${await res.text()}`);
+    }
+    const data = await res.json();
+    all.push(...data.issues);
+    if (startAt + pageSize >= data.total || data.issues.length === 0) break;
+    startAt += pageSize;
+  }
+  return all;
+}
+
 export const scopedBoardsJql = `project in (${scopedBoardKeys.join(", ")})`;
 
 // Bucketing override (found 2026-08-19): Jira's own `statusCategory`

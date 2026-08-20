@@ -3,14 +3,39 @@ import {
   correctedBuckets,
   runJqlCount,
   runJqlSearch,
+  runJqlSearchAll,
   scopedBoardsJql,
 } from "@/lib/jira";
 import type {
+  OngoingItem,
   ReopenedItem,
   StaleItem,
   TopPerformerEntry,
   UnassignedItem,
 } from "@/content/dashboard";
+
+// "Ongoing" JQL — same corrected bucketing used everywhere: "Selected for
+// Development" counts as active even though its native statusCategory is
+// "To Do"; "On Hold" is excluded even though its native statusCategory is
+// "In Progress". See content/dashboard.ts and lib/jira.ts's
+// correctedBuckets for the same rule applied elsewhere.
+export async function fetchOngoingTicketsLive(): Promise<OngoingItem[]> {
+  const jql = `${scopedBoardsJql} AND ((statusCategory = "In Progress" AND status != "On Hold") OR status = "Selected for Development")`;
+  const issues = await runJqlSearchAll(`${jql} ORDER BY updated DESC`, [
+    "summary",
+    "status",
+    "assignee",
+    "project",
+  ]);
+  return issues.map((issue) => ({
+    key: issue.key,
+    summary: issue.fields.summary,
+    status: issue.fields.status.name,
+    assignee: issue.fields.assignee?.displayName ?? "Unassigned",
+    project: issue.fields.project.key,
+    webUrl: `${process.env.JIRA_BASE_URL}/browse/${issue.key}`,
+  }));
+}
 
 // Widget 1: top performer, last 30 days — current assignee, scoped boards,
 // same corrected-bucket scoring as the leaderboard's all-time view.
@@ -99,14 +124,15 @@ export async function fetchReopenedCountLive(): Promise<number> {
 }
 
 export async function fetchLiveDashboard() {
-  const [topPerformers30d, unassignedOpen, staleTickets20d, reopenedCount] =
+  const [topPerformers30d, unassignedOpen, staleTickets20d, reopenedCount, ongoingTickets] =
     await Promise.all([
       fetchTopPerformers30dLive(),
       fetchUnassignedOpenLive(),
       fetchStaleTickets20dLive(),
       fetchReopenedCountLive(),
+      fetchOngoingTicketsLive(),
     ]);
-  return { topPerformers30d, unassignedOpen, staleTickets20d, reopenedCount };
+  return { topPerformers30d, unassignedOpen, staleTickets20d, reopenedCount, ongoingTickets };
 }
 
 export type { ReopenedItem };
