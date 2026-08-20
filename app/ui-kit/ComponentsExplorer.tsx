@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { UIKitComponent } from "@/content/ui-kit";
 import ComponentPreview from "./ComponentPreview";
 import HandoffPanel from "./HandoffPanel";
+import { renderMarkdown } from "@/lib/markdown";
 
 export default function ComponentsExplorer({ components }: { components: UIKitComponent[] }) {
   const [active, setActive] = useState(components[0]?.slug ?? "");
@@ -71,19 +72,17 @@ export default function ComponentsExplorer({ components }: { components: UIKitCo
               {c.rationale}
             </p>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              {c.variants.map((v) => (
-                <span
-                  key={v}
-                  className="text-xs rounded-full border border-shadow-border px-2 py-0.5 text-muted"
-                >
-                  {v}
-                </span>
-              ))}
-            </div>
-
             <div className="mt-5 rounded-xl bg-shadow-card border border-shadow-border p-6">
               <ComponentPreview slug={c.slug} />
+            </div>
+
+            <div className="mt-8">
+              <h3 className="label-eyebrow text-xs text-periwinkle uppercase mb-3">
+                Documentation
+              </h3>
+              <div className="rounded-xl border border-shadow-border p-6">
+                {renderMarkdown(c.documentation)}
+              </div>
             </div>
 
             <button
