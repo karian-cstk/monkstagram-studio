@@ -40,8 +40,62 @@ export function renderMarkdown(markdown: string): ReactNode {
     listBuffer = [];
   };
 
+  const isTableRow = (line: string) => line.trim().startsWith("|") && line.trim().endsWith("|");
+  const isTableSeparator = (line: string) => /^\|[\s:|-]+\|$/.test(line.trim());
+  const splitRow = (line: string) =>
+    line
+      .trim()
+      .slice(1, -1)
+      .split("|")
+      .map((cell) => cell.trim());
+
   while (i < lines.length) {
     const line = lines[i];
+
+    if (isTableRow(line) && isTableSeparator(lines[i + 1] ?? "")) {
+      const headerCells = splitRow(line);
+      i += 2;
+      const rows: string[][] = [];
+      while (i < lines.length && isTableRow(lines[i])) {
+        rows.push(splitRow(lines[i]));
+        i++;
+      }
+      flushList();
+      blocks.push(
+        <div key={`table-${blocks.length}`} className="my-4 overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-shadow-border">
+                {headerCells.map((cell, idx) => (
+                  <th key={idx} className="text-left py-2 pr-4 font-semibold text-crystal-clear">
+                    {renderInline(cell, `th-${blocks.length}-${idx}`)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, rIdx) => (
+                <tr key={rIdx} className="border-b border-shadow-border/50">
+                  {row.map((cell, cIdx) => (
+                    <td key={cIdx} className="py-2 pr-4 text-subtle align-top">
+                      {renderInline(cell, `td-${blocks.length}-${rIdx}-${cIdx}`)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      continue;
+    }
+
+    if (line.trim() === "---") {
+      flushList();
+      blocks.push(<hr key={`hr-${blocks.length}`} className="my-6 border-shadow-border" />);
+      i++;
+      continue;
+    }
 
     if (line.startsWith("```")) {
       const codeLines: string[] = [];
